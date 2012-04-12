@@ -37,21 +37,21 @@
 
 nvmErr_t (*nvm_detect) 
 (nvmInterface_t nvmInterface,nvmType_t* pNvmType) 
-= (void *) 0x00006cb9;
+= (void *) 0x00002a38;
 
 nvmErr_t (*nvm_read) 
 (nvmInterface_t nvmInterface , nvmType_t nvmType , void *pDest, uint32_t address, uint32_t numBytes) 
-= (void *) 0x00006d69;
+= (void *) 0x00002ae8;
 
 nvmErr_t (*nvm_write)
 (nvmInterface_t nvmInterface, nvmType_t nvmType ,void *pSrc, uint32_t address, uint32_t numBytes) 
-= (void *) 0x00006ec5;
+= (void *) 0x00002c40;
 
 nvmErr_t (*nvm_erase)
 (nvmInterface_t nvmInterface, nvmType_t nvmType ,uint32_t sectorBitfield) 
-= (void*) 0x00006e05;
+= (void*) 0x00002b80;
 
 void(*nvm_setsvar)
 (uint32_t zero_for_awesome) 
-= (void *)0x00007085;
+= (void *)0x00002df8;
 

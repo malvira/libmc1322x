@@ -56,7 +56,7 @@
 .section .start
 
 .set base, .
-.set _rom_data_init, 0x108d0
+.set _rom_data_init, 0xc8
 	
 
 	.globl _start
