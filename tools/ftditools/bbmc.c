@@ -155,6 +155,13 @@ struct layout * find_layout(char * str)
 
 static uint32_t vendid = 0x0403; uint32_t prodid = 0x6010;
 
+#if __APPLE__
+static void restore_ftdi_kext(void)
+{
+	system("sudo kextload /System/Library/Extensions/FTDIUSBSerialDriver.kext");
+}
+#endif
+
 int main(int argc, char **argv) 
 {
 	struct ftdi_context ftdic;
@@ -276,8 +283,8 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	if (ftdi_set_interface(&ftdic, layout.interface) < 0) {
-		fprintf(stderr, "couldn't set interface %d\n", layout.interface);
+	if ((ret = ftdi_set_interface(&ftdic, layout.interface)) < 0) {
+		fprintf(stderr, "couldn't set interface %d, err %d (%s)\n", layout.interface, ret, ftdi_get_error_string(&ftdic));
 		return EXIT_FAILURE;
 	}
 
@@ -306,8 +313,25 @@ int main(int argc, char **argv)
 		     NULL,
 		     NULL,
 		     dev_index)) < 0) {
-		fprintf(stderr, "couldn't open dev_index %d\n", dev_index);
-		return EXIT_FAILURE;
+#if __APPLE__
+		if((ret==-5) && (0==system("sudo kextunload /System/Library/Extensions/FTDIUSBSerialDriver.kext"))) {
+			// Try again without the FTDI kext loaded this time
+			atexit(&restore_ftdi_kext);
+			ret = ftdi_usb_open_desc_index(
+				&ftdic,
+				vendid,
+				prodid,
+				NULL,
+				NULL,
+				dev_index
+			);
+		}
+		if(ret)
+#endif // __APPLE__
+		{
+			fprintf(stderr, "couldn't open dev_index %d, err %d (%s)\n", dev_index, ret, ftdi_get_error_string(&ftdic));
+			return EXIT_FAILURE;
+		}
 	}
 
 	
