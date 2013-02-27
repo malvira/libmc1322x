@@ -58,10 +58,11 @@
 #define REDBEE_USB_VREF2H   low(6)
 #define REDBEE_USB_INTERFACE INTERFACE_B
 
-#define FLEXIBITY_USB_RESET    high(2)
-#define FLEXIBITY_USB_VREF2L   high(7)
-#define FLEXIBITY_USB_VREF2H   high(6)
-#define FLEXIBITY_USB_INTERFACE INTERFACE_A
+
+/* #define FLEXIBITY_USB_RESET    high(2) */
+/* #define FLEXIBITY_USB_VREF2L   high(7) */
+/* #define FLEXIBITY_USB_VREF2H   high(6) */
+/* #define FLEXIBITY_USB_INTERFACE INTERFACE_A */
 
 #define BOARD REDBEE_USB
 
@@ -121,10 +122,10 @@ static struct layout layouts[] =
 	  .desc = "Redbee USB stick",
 	  std_layout(REDBEE_USB)
 	},
-	{ .name = "flexibity",
-	  .desc = "Flexibity USB Interface",
-	  std_layout(FLEXIBITY_USB)
-	},
+	/* { .name = "flexibity", */
+	/*   .desc = "Flexibity USB Interface", */
+	/*   std_layout(FLEXIBITY_USB) */
+	/* }, */
 	{ .name = NULL, /* end of table */ },
 };		
 
