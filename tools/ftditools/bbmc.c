@@ -428,6 +428,9 @@ void reset(struct ftdi_context *ftdic, const struct layout * l)
 
 	bb_mpsee(ftdic, l->dir, (l->reset_release | l->vref2_normal));
 	bb_mpsee(ftdic, l->dir, (l->reset_set     | l->vref2_normal));
+
+	usleep( 10000 );
+
 	bb_mpsee(ftdic, l->dir, (l->reset_release | l->vref2_normal));
 
 	return;
