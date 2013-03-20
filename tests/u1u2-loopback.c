@@ -41,6 +41,8 @@
 
 void main(void) {
 
+        GPIO->PAD_PU_SEL.U2RX = 1;
+
 	uart_init(UART1, 115200);
 	uart_init(UART2, 115200);
 	
