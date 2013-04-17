@@ -76,6 +76,7 @@ try:
 		if newpacket == 1:
 			newpacket = 0
 			outfile.write(pack('<LLLL',sec,usec,length,length))
+			outfile.flush()
 
 			count += 1
 			sys.stderr.write("RX: %d\r" % count)			
@@ -90,7 +91,7 @@ try:
 				m = re.match('.*(\w\w).*', d)
 				if m is not None:
 					outfile.write(pack('<B', int(m.group(1),16)))
-
+					outfile.flush()
 
 #             cn.recv_block()
 #             if cn.data != None:
