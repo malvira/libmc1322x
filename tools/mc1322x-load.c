@@ -45,7 +45,7 @@ char* second;
 char* term = "/dev/ttyUSB0";
 int baud = B115200;
 int verbose = 0;
-char* rts = "rts";
+char* rts = "none";
 char* command;
 int first_delay = 50;
 int second_delay = 100;
@@ -314,7 +314,7 @@ void help(void)
   printf("       -z optional: send a zero length file as secondary\n");
   printf("       -t, terminal default: /dev/ttyUSB0\n");
   printf("       -u, baud rate default: 115200\n");
-  printf("       -r [none|rts] flow control default: rts\n");
+  printf("       -r [none|rts] flow control default: none\n");
   printf("       -c command to run for autoreset: \n");
   printf("              e.g. -c 'bbmc -l redbee-econotag -i 0 reset'\n");
   printf("       -e exit instead of dropping to terminal display\n");

@@ -12,7 +12,7 @@ my $second = '';
 my $term = '/dev/ttyUSB0';
 my $baud = '115200';
 my $verbose;
-my $rts = 'rts';
+my $rts = 'none';
 my $command = '';
 my $first_delay = 50;
 my $second_delay = 100;
@@ -43,7 +43,7 @@ if($filename eq '') {
     print "       -z optional: send a zero length file as secondary\n";
     print "       -t, terminal default: /dev/ttyUSB0\n";
     print "       -u, --baud baud rate default: 115200\n";
-    print "       -r [none|rts] flow control default: rts\n";
+    print "       -r [none|rts] flow control default: none\n";
     print "       -c command to run for autoreset: \n";
     print "              e.g. -c 'bbmc -l redbee-econotag -i 0 reset'\n";
     print "       -e exit instead of dropping to terminal display\n";
