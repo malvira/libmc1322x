@@ -46,20 +46,23 @@
 #define low(x)  (1 << x)
 #define high(x) (1 << (x + 8))
 
+#define REDBEE_ECONOTAG_PWR		 high(1)
 #define REDBEE_ECONOTAG_RESET    high(2)
 #define REDBEE_ECONOTAG_VREF2L   high(7)
 #define REDBEE_ECONOTAG_VREF2H   high(6) 
 #define REDBEE_ECONOTAG_INTERFACE INTERFACE_A
 
+#define REDBEE_USB_PWR		high(1)
 #define REDBEE_USB_RESET    high(2)
 #define REDBEE_USB_VREF2L   low(5)
 #define REDBEE_USB_VREF2H   low(6)
 #define REDBEE_USB_INTERFACE INTERFACE_B
 
-#define FLEXIBITY_USB_RESET    high(2)
-#define FLEXIBITY_USB_VREF2L   high(7)
-#define FLEXIBITY_USB_VREF2H   high(6)
-#define FLEXIBITY_USB_INTERFACE INTERFACE_A
+
+/* #define FLEXIBITY_USB_RESET    high(2) */
+/* #define FLEXIBITY_USB_VREF2L   high(7) */
+/* #define FLEXIBITY_USB_VREF2H   high(6) */
+/* #define FLEXIBITY_USB_INTERFACE INTERFACE_A */
 
 #define BOARD REDBEE_USB
 
@@ -68,8 +71,10 @@
 #define CAT(x,y)       x##y
 #define CAT2(x, y, z)  x##y##z
 
-#define dir(x)            ( CAT(x,_RESET) | CAT(x,_VREF2L) | CAT(x,_VREF2H))
+#define dir(x)            ( CAT(x,_PWR) | CAT(x,_RESET) | CAT(x,_VREF2L) | CAT(x,_VREF2H))
 #define interface(x)      ( CAT(x,_INTERFACE) )
+#define pwr_off(x)		  ( CAT(x,_PWR)		  )
+#define pwr_on(x)		  ( 0 )
 #define reset_release(x)  ( CAT(x,_RESET)     )
 #define reset_set(x)      ( 0 )
 #define vref2_normal(x)   ( CAT(x,_VREF2H)    )
@@ -83,6 +88,8 @@ struct layout {
 	char *desc;
 	enum ftdi_interface interface;
 	uint16_t dir;
+	uint16_t pwr_off;
+	uint16_t pwr_on;
 	uint16_t reset_release;
 	uint16_t reset_set;
 	uint16_t vref2_normal;
@@ -98,6 +105,8 @@ void usage(void);
 #define std_layout(x)                        \
 	.interface = interface(x),           \
         .dir = dir(x),	                     \
+	.pwr_off = pwr_off(x), 				\
+	.pwr_on = pwr_on(x),				\
 	.reset_release = reset_release(x),   \
 	.reset_set = reset_set(x),	     \
 	.vref2_normal = vref2_normal(x),     \
@@ -113,10 +122,10 @@ static struct layout layouts[] =
 	  .desc = "Redbee USB stick",
 	  std_layout(REDBEE_USB)
 	},
-	{ .name = "flexibity",
-	  .desc = "Flexibity USB Interface",
-	  std_layout(FLEXIBITY_USB)
-	},
+	/* { .name = "flexibity", */
+	/*   .desc = "Flexibity USB Interface", */
+	/*   std_layout(FLEXIBITY_USB) */
+	/* }, */
 	{ .name = NULL, /* end of table */ },
 };		
 
@@ -175,6 +184,8 @@ int main(int argc, char **argv)
 	/* overrides for layout parameters */
 	int interface      = -1;
 	int dir            = -1;
+	int pwr_off		   = -1;
+	int pwr_on		   = -1;
 	int reset_release  = -1;
 	int reset_set      = -1;
 	int vref2_normal   = -1;
@@ -266,6 +277,7 @@ int main(int argc, char **argv)
 #define override(x) if(x > 0) { layout.x = x; }
 	override(interface);
 	override(dir);
+	override(pwr_off); override(pwr_on);
 	override(reset_release); override(reset_set);
 	override(vref2_normal); override(vref2_erase);
 	
@@ -385,6 +397,8 @@ void usage(void)
 		printf("\n");
 		printf(    "\t\tinterface: \t0x%04x\n", layouts[i].interface);
 		printf(    "\t\tdir: \t\t0x%04x\n", layouts[i].dir);
+		printf(	   "\t\tpower off:     \t0x%04x\n", layouts[i].pwr_off);
+		printf(	   "\t\tpower on:      \t0x%04x\n", layouts[i].pwr_on);
 		printf(    "\t\treset release: \t0x%04x\n", layouts[i].reset_release);
 		printf(    "\t\treset hold:    \t0x%04x\n", layouts[i].reset_set);
 		printf(    "\t\tvref2 normal:  \t0x%04x\n", layouts[i].vref2_normal);
@@ -450,6 +464,8 @@ void reset(struct ftdi_context *ftdic, const struct layout * l)
 
 	printf("toggle reset\n");
 
+	bb_mpsee(ftdic, l->dir, (l->pwr_off));
+	bb_mpsee(ftdic, l->dir, (l->pwr_on));
 	bb_mpsee(ftdic, l->dir, (l->reset_release | l->vref2_normal));
 	bb_mpsee(ftdic, l->dir, (l->reset_set     | l->vref2_normal));
 	bb_mpsee(ftdic, l->dir, (l->reset_release | l->vref2_normal));
@@ -467,6 +483,8 @@ void erase(struct ftdi_context *ftdic, const struct layout * l)
 	/* set as inputs for now */
 	ftdi_set_bitmode(ftdic, 0 , BITMODE_MPSSE); 
 
+	bb_mpsee(ftdic, l->dir, (l->pwr_off));
+	bb_mpsee(ftdic, l->dir, (l->pwr_on ));
 	bb_mpsee(ftdic, l->dir, (l->reset_release | l->vref2_normal));
 	bb_mpsee(ftdic, l->dir, (l->reset_release | l->vref2_erase));
 	
