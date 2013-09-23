@@ -51,6 +51,7 @@ int first_delay = 50;
 int second_delay = 100;
 int do_exit = 0;
 int zerolen = 0;
+int ownlen = 0;
 char *args = NULL;
 
 struct stat sbuf;
@@ -61,9 +62,9 @@ int ffd;
 int sfd;
 
 void help(void);
+void waitFor(const char *needle, const char sendZero);
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   int c = 0;
   int r = 0;
   int i = 0;
@@ -71,7 +72,7 @@ int main(int argc, char **argv)
   opterr = 0;
 
   /* Parse options */
-  while ((c = getopt(argc, argv, "f:s:zt:vu:r:c:a:b:eh")) != -1) {
+  while ((c = getopt(argc, argv, "f:s:zlt:vu:r:c:a:b:eh")) != -1) {
     switch (c)
     {
       case 'f':
@@ -82,6 +83,9 @@ int main(int argc, char **argv)
         break;
       case 'z':
         zerolen = 1;
+        break;
+      case 'l':
+        ownlen = 1;
         break;
       case 't':
         term = optarg;
@@ -168,34 +172,14 @@ int main(int argc, char **argv)
   tcsetattr(pfd, TCSANOW, &options);
 
   /* Reset the board if we can */
-  printf("Reset the board to enter bootloader (waiting for CONNECT)...\n");
+  printf("Reset the board to enter bootloader\n");
   if (command) {
     printf("Performing reset: %s\n", command);
     system(command);
   }
 
   /* Primary bootloader wait loop */
-  i = 0;
-  while (1) {
-    /* Wait for CONNECT */
-    r = write(pfd, (const void*)"\0", 1);
-    sleep(1);
-    r = read(pfd, &buf[i], sizeof(buf)-1-i);
-    if (r > 0) {
-      buf[i+r] = '\0';
-      printf("%s", &buf[i]); fflush(stdout);
-      if (strstr(&buf[i], "CONNECT")) {
-        printf("\n");
-        break;
-      }
-      i += r;
-      if (i >= sizeof(buf)-1) {
-        i = 0;
-      }
-    } else {
-      printf("."); fflush(stdout);
-    }
-  }
+  waitFor("CONNECT", 1);
 
   /* Send primary file */
   if (!filename) {
@@ -230,28 +214,10 @@ int main(int argc, char **argv)
   /* Secondary loader wait loop */
   if (second || zerolen) {
     /* Wait for ready */
-    printf("Sending secondary file (waiting for ready)...\n");
-    i = 0;
-    while (1) {
-      sleep(1);
-      r = read(pfd, &buf[i], sizeof(buf)-1-i);
-      if (r > 0) {
-        buf[i+r] = '\0';
-        printf("%s", &buf[i]); fflush(stdout);
-        if (strstr(buf, "ready")) {
-          printf("\n");
-          break;
-        }
-        i += r;
-        if (i >= sizeof(buf)-1) {
-          i = 0;
-        }
-      } else {
-        printf("."); fflush(stdout);
-      }
-    }
+    waitFor("ready", 0);
 
     /* Send secondary file */
+    printf("Sending secondary file\n");
     if (second) {
       if (stat(second, &sbuf)) {
         printf("Cannot open secondary file %s!\n", second);
@@ -262,11 +228,22 @@ int main(int argc, char **argv)
         printf("Cannot open secondary file %s!\n", second);
         return -1;
       }
-      s = sbuf.st_size;
-      printf("Sending %s (%i bytes)...\n", second, s);
-      r = write(pfd, (const void*)&s, 4);
-      i = 0;
+
+      if (ownlen) {
+        s = sbuf.st_size;
+        r = write(pfd, (const void*) &s, 4);
+        printf("Sending %s (%i bytes)...\n", second, s);
+        r = read(sfd, &s, 4);
+      } else {
+        s = sbuf.st_size + 4;
+        r = write(pfd, (const void*) &s, 4);
+        s = sbuf.st_size;
+        printf("Sending len (4 bytes) + %s (%i bytes)...\n", second, s);
+      }
+      r = write(pfd, (const void*) &s, 4);
+
       r = read(sfd, buf, 1);
+      i = 4;
       while (r > 0) {
         do {
           usleep(second_delay);
@@ -283,6 +260,9 @@ int main(int argc, char **argv)
       write(pfd, (const void*)&s, 4);
     }
   }
+
+  /* Wait for flasher done */
+  waitFor("flasher done", 0);
 
   /* Send the remaining arguments */
   if (args) {
@@ -301,6 +281,8 @@ int main(int argc, char **argv)
       }
     }
   }
+
+  exit(EXIT_SUCCESS);
 }
 
 
@@ -312,6 +294,7 @@ void help(void)
   printf("       -f required: binary file to load\n");
   printf("       -s optional: secondary binary file to send\n");
   printf("       -z optional: send a zero length file as secondary\n");
+  printf("       -l optional: secondary file contains len in first 4 Bytes (little endian)\n");
   printf("       -t, terminal default: /dev/ttyUSB0\n");
   printf("       -u, baud rate default: 115200\n");
   printf("       -r [none|rts] flow control default: none\n");
@@ -322,4 +305,32 @@ void help(void)
   printf("       -b second intercharacter delay, passed to usleep\n");
   printf("\n");
   printf("Anything on the command line is sent after all of the files.\n\n");
+}
+
+
+void waitFor(const char *needle, const char sendZero)
+{
+  int r = 0;
+  int i = 0;
+
+  printf("Waiting for %s...\n", needle);
+  while (1) {
+    if (sendZero) write(pfd, (const void*)"\0", 1);
+    sleep(1);
+    r = read(pfd, &buf[i], sizeof(buf)-1-i);
+    if (r > 0) {
+      buf[i+r] = '\0';
+      printf("%s", &buf[i]); fflush(stdout);
+      if (strstr(&buf[i], needle)) {
+        printf("\n");
+        break;
+      }
+      i += r;
+      if (i >= sizeof(buf)-1) {
+        i = 0;
+      }
+    } else {
+      printf("."); fflush(stdout);
+    }
+  }
 }
