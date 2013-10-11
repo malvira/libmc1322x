@@ -18,10 +18,12 @@ my $first_delay = 50;
 my $second_delay = 100;
 my $do_exit;
 my $zerolen;
+my $ownlen;
 
 GetOptions ('file=s' => \$filename,
 	    'secondfile=s' => \$second,
 	    'zerolen' => \$zerolen,
+	    'l|ownlen' => \$ownlen,
 	    'terminal=s' => \$term, 
 	    'verbose' => \$verbose, 
 	    'u|baud=s' => \$baud,
@@ -41,6 +43,7 @@ if($filename eq '') {
     print "       -f required: binary file to load\n";
     print "       -s optional: secondary binary file to send\n";
     print "       -z optional: send a zero length file as secondary\n";
+    print "       -l optional: secondary file contains len in first 4 Bytes (little endian)\n";
     print "       -t, terminal default: /dev/ttyUSB0\n";
     print "       -u, --baud baud rate default: 115200\n";
     print "       -r [none|rts] flow control default: none\n";
@@ -109,12 +112,20 @@ while(1) {
     print $ret . "\n";
     
     if (-e $filename || (defined($zerolen) && ($s == 1))) {
-	
-	if(defined($zerolen) && ($s == 1)) {
-	    $size = 0;
-	} else {
-	    $size = -s $filename;
-	}
+
+    if ($s == 0) {
+        $size = -s $filename;
+    } else {
+	    if (defined($zerolen)) {
+	        $size = 0;
+	    } else {
+            if (defined($ownlen)) {
+                $size = -s $filename;
+            } else {
+    	        $size = (-s $filename) + 4;
+            }
+	    }
+    }
 
 	print ("Size: $size bytes\n");
 	$ob->write(pack('V',$size));
@@ -123,7 +134,18 @@ while(1) {
 	   ((!defined($zerolen)) && ($s == 1))) {
 	    open(FILE, $filename) or die($!);
 	    print "Sending $filename\n";
-	    
+
+        if ($s == 1) {
+            if (defined($ownlen)) {
+                read(FILE, my $packed_length, 4);
+                $size = unpack('V', $packed_length);
+            } else {
+        	    $size = -s $filename;
+            }
+            print ("Prog-Size: $size bytes\n");
+        	$ob->write(pack('V',$size));
+        }
+
 	    my $i = 1;
 	    while(read(FILE, $c, 1)) {
 		$i++;

@@ -107,10 +107,6 @@ void main(void) {
 	dbg_put_hex(err);
 	dbg_putstr("\n\r");
 
-	dbg_putstr(" type is: 0x");
-	dbg_put_hex32(type);
-	dbg_putstr("\n\r");
-
 	/* say we are ready */
 	len = 0;
 	putstr("ready");
@@ -123,7 +119,7 @@ void main(void) {
 		len += (c<<(i*8));
 	}
 
-	dbg_putstr("len: ");
+	dbg_putstr("write_len: 0x");
 	dbg_put_hex32(len);
 	dbg_putstr("\n\r");
 	
@@ -137,10 +133,6 @@ void main(void) {
 	((uint8_t *)buf)[0] = 'N'; ((uint8_t *)buf)[1] = 'O'; ((uint8_t *)buf)[2] = 'N'; ((uint8_t *)buf)[3] = 'O';
 #endif
 
-	dbg_putstr(" type is: 0x");
-	dbg_put_hex32(type);
-	dbg_putstr("\n\r");
-
 	/* don't make a valid boot image if the received length is zero */
 	if(len == 0) {
 		((uint8_t *)buf)[0] = 'N'; 
@@ -148,21 +140,28 @@ void main(void) {
 		((uint8_t *)buf)[2] = 'N'; 
 		((uint8_t *)buf)[3] = 'O';
 	}
-	
-	err = nvm_write(gNvmInternalInterface_c, type, (uint8_t *)buf, 0, 4);
 
-	dbg_putstr("nvm_write returned: 0x");
-	dbg_put_hex(err);
-	dbg_putstr("\n\r");
+    uint32_t err_count = nvm_write(gNvmInternalInterface_c, type, (uint8_t *)buf, 0, 4);
 
-	/* write the length */
-	err = nvm_write(gNvmInternalInterface_c, type, (uint8_t *)&len, 4, 4);
-
-	/* read a byte, write a byte */
+	/* read a byte, write a byte, including the first 4 len bytes */
 	for(i=0; i<len; i++) {
 		c = getc();	       
-		err = nvm_write(gNvmInternalInterface_c, type, (uint8_t *)&c, 8+i, 1); 
+		err_count += nvm_write(gNvmInternalInterface_c, type, (uint8_t *)&c, 4+i, 1); 
 	}
+
+  if (err_count > 0) {
+		dbg_putstr("ALERT nvm_write error-count: ");
+		dbg_put_hex32(err_count);
+		dbg_putstr("\n\r");
+	} else {
+		dbg_putstr("write successfully done\n\r");
+	}
+
+	/* read and output real len */
+	err = nvm_read(gNvmInternalInterface_c, type, (uint8_t *) &len, 4, 4);
+	dbg_putstr("prog_len: 0x");
+	dbg_put_hex32(len);
+	dbg_putstr("\n\r");
 
 	putstr("flasher done\n\r");
 
