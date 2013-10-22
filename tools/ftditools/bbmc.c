@@ -118,6 +118,10 @@ static struct layout layouts[] =
 	  .desc = "Redbee Econotag",
 	  std_layout(REDBEE_ECONOTAG)
 	},
+	{ .name = "redbee-econotag",
+	  .desc = "Redbee Econotag",
+	  std_layout(REDBEE_ECONOTAG)
+	},
 	{ .name = "redbee-usb",
 	  .desc = "Redbee USB stick",
 	  std_layout(REDBEE_USB)
