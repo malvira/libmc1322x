@@ -259,10 +259,10 @@ int main(int argc, char **argv) {
       printf("Sending %i...\n", s);
       write(pfd, (const void*)&s, 4);
     }
-  }
 
-  /* Wait for flasher done */
-  waitFor("flasher done", 0);
+    /* Wait for flasher done */
+    waitFor("flasher done", 0);
+  }
 
   /* Send the remaining arguments */
   if (args) {

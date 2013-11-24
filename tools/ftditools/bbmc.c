@@ -114,6 +114,10 @@ void usage(void);
 	
 static struct layout layouts[] =
 {
+	{ .name = "econotag",
+	  .desc = "Redbee Econotag",
+	  std_layout(REDBEE_ECONOTAG)
+	},
 	{ .name = "redbee-econotag",
 	  .desc = "Redbee Econotag",
 	  std_layout(REDBEE_ECONOTAG)
