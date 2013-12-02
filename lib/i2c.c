@@ -214,7 +214,7 @@ void    i2c_transmit() {
 /* force SCL to become bus master when sda is still low (can occur after sys reset */
 /*----------------------------------------------------------------------------*/
 void i2c_force_reset(void) {
-	uint8_t tmp;
+  volatile uint8_t tmp __attribute__((unused));
 	*I2CCR = 0x20;
 	*I2CCR = 0xA0;
 	tmp = *I2CDR;
@@ -286,7 +286,7 @@ void i2c_disable(void) {
 /*----------------------------------------------------------------------------*/
 #ifdef I2C_NON_BLOCKING
 void i2c_isr (void) {
-	uint8_t dummy;
+  volatile uint8_t dummy  __attribute__ ((unused));
 	if (*I2CSR & I2C_MIF) { // interrupt is from i2c
 		if (*I2CSR & I2C_MCF) { // one byte transferred/received. will be cleared automatically when I2CDR is written or I2CSR read
 			if (tx_buf_ptr != 0) { // we're sending

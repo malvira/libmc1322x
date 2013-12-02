@@ -110,7 +110,7 @@ session_id_t open_session(uint16_t addr __attribute((unused))) { return 0; }
 void main(void) {
 	uint32_t state;
 	volatile packet_t *p;
-	session_id_t sesid;
+	session_id_t sesid __attribute__((unused));
 	ptype_t type;
 	uint16_t addr, my_addr;
 

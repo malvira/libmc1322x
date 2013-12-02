@@ -139,8 +139,12 @@ clbss_l:
 	cmp     r0, r1
 	blt     clbss_l
 
-	b main
+        ldr ip, main_addr
+	bx ip
 
+main_addr:
+	.word main
+	
 //	ldr     r1,=_system_stack
 // 	msr     cpsr_c,#(SVC_MODE | I_BIT | F_BIT)
 //	add     r1,r1,#sup_stack_size

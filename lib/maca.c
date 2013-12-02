@@ -1152,7 +1152,7 @@ uint32_t exec_init_entry(volatile uint32_t *entries, uint8_t *valbuf)
 #define FLASH_INIT_MAGIC 0x00000abc
 uint32_t init_from_flash(uint32_t addr) {
 	nvmType_t type=0;
-	nvmErr_t err;	
+	nvmErr_t err __attribute__((unused));	
 	volatile uint32_t buf[8];
 	volatile uint32_t len;
 	volatile uint32_t i=0,j;

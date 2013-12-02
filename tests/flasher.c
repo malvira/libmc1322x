@@ -207,7 +207,7 @@ void main(void) {
 
 void flushrx(void)
 {
-	volatile uint8_t c;
+  volatile uint8_t c __attribute__((unused));
 	while(*UART1_URXCON !=0) {
 		c = *UART1_UDATA;
 	}

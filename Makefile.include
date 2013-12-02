@@ -32,8 +32,8 @@ RANLIB	= $(CROSS_COMPILE)ranlib
 
 # Build CFLAGS and prepend it to user-supplied CFLAGS
 CFLAGS_PLAT  ?= -march=armv4t -mtune=arm7tdmi-s -mlong-calls -msoft-float \
-		-mthumb-interwork -fno-strict-aliasing -fno-common -ffixed-r8 \
-		-ffunction-sections -ffreestanding -fno-builtin -nodefaultlibs
+		-fno-strict-aliasing -fno-common -ffixed-r8 \
+		-ffunction-sections -ffreestanding -fno-builtin -nodefaultlibs -fno-strict-volatile-bitfields
 CFLAGS_WARN  ?= -Wcast-align -Wall -Wstrict-prototypes -Wextra 
 CFLAGS_OPT   ?= -Os
 CFLAGS_DEBUG ?= -g -DDEBUG -Werror
@@ -41,7 +41,7 @@ CFLAGS_MISC  ?= -pipe
 CFLAGS := $(CFLAGS_PLAT) $(CFLAGS_WARN) $(CFLAGS_OPT) $(CFLAGS_DEBUG) $(CFLAGS_MISC) $(CFLAGS)
 
 # Thumb flags, used for building most objects
-CFLAGS_THUMB ?= -mthumb -mcallee-super-interworking
+CFLAGS_THUMB ?= -mthumb
 
 # Linker flags
 LINKERSCRIPT ?= $(MC1322X)/mc1322x.lds
