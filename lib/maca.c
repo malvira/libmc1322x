@@ -154,8 +154,8 @@ void check_maca(void) {
 		Print_Packets("check_maca");
 #if PACKET_STATS
 		for(i=0; i<NUM_PACKETS; i++) {
-			printf("packet 0x%lx seen %d post_tx %d get_free %d rxd %d\n", 
-			       (uint32_t) &packet_pool[i], 
+			printf("packet %p seen %d post_tx %d get_free %d rxd %d\n",
+			       &packet_pool[i],
 			       packet_pool[i].seen, 
 			       packet_pool[i].post_tx, 
 			       packet_pool[i].get_free, 
@@ -198,31 +198,31 @@ void Print_Packets(char *s) {
 
 	printf("packet pool after %s:\n\r",s);
 	p = free_head;	
-	printf("free_head: 0x%lx ", (uint32_t) free_head);
+	printf("free_head: %p ", free_head);
 	while(p != 0) {
 		p = p->left;
-		printf("->0x%lx", (uint32_t) p);
+		printf("->%p", p);
 	}
 	printf("\n\r");
 
 	p = tx_head;
-	printf("tx_head: 0x%lx ", (uint32_t) tx_head);
+	printf("tx_head: %p ", tx_head);
 	while(p != 0) {
 		p = p->left;
-		printf("->0x%lx", (uint32_t) p);
+		printf("->%p", p);
 	}
 	printf("\n\r");
 
 	p = rx_head;
-	printf("rx_head: 0x%lx ", (uint32_t) rx_head);
+	printf("rx_head: %p ", rx_head);
 	while(p != 0) {
 		p = p->left;
-		printf("->0x%lx", (uint32_t) p);
+		printf("->%p", p);
 	}
 	printf("\n\r");
 
-	printf("dma_rx: 0x%lx\n", (uint32_t) dma_rx);
-	printf("dma_tx: 0x%lx\n", (uint32_t) dma_tx);
+	printf("dma_rx: %p\n", dma_rx);
+	printf("dma_tx: %p\n", dma_tx);
 
 }
 
