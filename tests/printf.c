@@ -70,7 +70,7 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb,
 int main(void)
 {
 	char *ptr = "Hello world!";
-	char *np = 0;
+	// char *np = 0;
 	int i = 5;
 	unsigned int bs = sizeof(int)*8;
 	int mi;
@@ -90,7 +90,7 @@ int main(void)
 	mi = (1 << (bs-1)) + 1;
 	printf("%s\n", ptr);
 	printf("printf test\n");
-	printf("%s is null pointer\n", np);
+	// printf("%s is null pointer\n", np);
 	printf("%d = 5\n", i);
 	printf("%d = - max int\n", mi);
 	printf("char %c = 'a'\n", 'a');
